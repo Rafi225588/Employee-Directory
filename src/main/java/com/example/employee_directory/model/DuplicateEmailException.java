@@ -1,0 +1,8 @@
+package com.example.employee_directory.model;
+
+public class DuplicateEmailException extends RuntimeException {
+
+    public DuplicateEmailException(String email) {
+        super("Employee already exists with email: " + email);
+    }
+}
