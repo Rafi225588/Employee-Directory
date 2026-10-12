@@ -1,0 +1,101 @@
+# Employee Directory
+
+A small REST API to manage employees. It is made with Java 21, Spring Boot 4.1.1, Spring Data JPA and MySQL.
+
+## Database setup
+
+1. Install MySQL and start it (default port 3306).
+2. Open `src/main/resources/application.properties` and write your own MySQL username and password:
+
+       spring.datasource.username=root
+       spring.datasource.password=your_mysql_password
+
+3. You do not need to create the database or the table by yourself. When the app starts for the first time, it creates the database `employee_crud` and the `employees` table.
+
+## How to run
+
+You need JDK 21 or higher. Maven is not needed because the project has the Maven wrapper.
+
+    ./mvnw spring-boot:run
+
+On Windows Command Prompt use `mvnw.cmd spring-boot:run`. The app runs on http://localhost:8080.
+
+To run the tests use `./mvnw test`. The tests use an H2 in-memory database, so MySQL is not needed for them.
+
+## API endpoints
+
+- POST /api/employees : create an employee (201)
+- GET /api/employees : get all employees (200)
+- GET /api/employees/{id} : get one employee (200)
+- PUT /api/employees/{id} : update an employee (200)
+- DELETE /api/employees/{id} : delete an employee (204)
+
+## Sample requests
+
+I tested the API with Postman. For POST and PUT, choose Body, then raw, then JSON.
+
+### Create an employee
+
+- Method: POST
+- URL: `http://localhost:8080/api/employees`
+- Body:
+
+```json
+{
+  "fullName": "Karim Hasan",
+  "email": "karim@example.com",
+  "phone": "01712345678",
+  "department": "Engineering",
+  "designation": "Intern",
+  "joiningDate": "2026-10-01"
+}
+```
+
+- Result: 201 Created, with the saved employee (id, createdAt and the other fields).
+
+### Get all employees
+
+- Method: GET
+- URL: `http://localhost:8080/api/employees`
+- Result: 200 OK, a list of employees.
+
+### Get one employee
+
+- Method: GET
+- URL: `http://localhost:8080/api/employees/1`
+- Result: 200 OK, one employee. If the id does not exist, 404.
+
+### Update an employee
+
+- Method: PUT
+- URL: `http://localhost:8080/api/employees/1`
+- Body (same fields as create, here the designation is changed):
+
+```json
+{
+  "fullName": "Karim Hasan",
+  "email": "karim@example.com",
+  "phone": "01712345678",
+  "department": "Engineering",
+  "designation": "Junior Developer",
+  "joiningDate": "2026-10-01"
+}
+```
+
+- Result: 200 OK, with the updated employee (updatedAt is set now).
+
+### Delete an employee
+
+- Method: DELETE
+- URL: `http://localhost:8080/api/employees/1`
+- Result: 204 No Content (empty body).
+
+## Validation and errors
+
+- fullName is required, 3 to 100 characters.
+- email is required, must be a valid email and must be unique.
+- phone is required, 11 digits, starts with 01.
+- department is required. designation is optional.
+- joiningDate is required, format yyyy-MM-dd, and it cannot be a future date.
+
+If the input is wrong, the API returns 400 with a message for each wrong field. If the id does not exist, it returns 404. If the email is already used (create or update), it returns 409. All errors are returned as JSON.
