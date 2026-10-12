@@ -1,4 +1,4 @@
-package com.example.employee_directory.model;
+package com.example.employee_directory.exception;
 
 import java.time.LocalDateTime;
 import java.util.Map;

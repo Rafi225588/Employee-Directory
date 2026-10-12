@@ -1,4 +1,4 @@
-package com.example.employee_directory.model;
+package com.example.employee_directory.exception;
 
 public class EmployeeNotFoundException extends RuntimeException {
 
