@@ -10,14 +10,23 @@ import java.time.LocalDateTime;
 public class Employee {
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
+    @Column (name="id")
     private Long id;
+    @Column (name="full_name",nullable = false, length=100)
     private String fullName;
+    @Column (name="email",nullable = false,unique = true,length=255)
     private String email;
+    @Column (name="phone",nullable=false,length=11)
     private String phone;
+    @Column (name="department",nullable=false,length=255)
     private String department;
+    @Column (name="designation",nullable = false,length = 255)
     private String designation;
+    @Column (name="joining_date",nullable=false)
     private LocalDate joiningDate;
+    @Column (name="created_at",nullable= false,updatable = false)
     private LocalDateTime createdAt;
+    @Column (name="updated_at")
     private LocalDateTime updatedAt;
     @PrePersist
     void onCreate() {
