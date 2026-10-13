@@ -28,7 +28,8 @@ public class EmployeeRequest {
     @NotBlank(message = "Department is required")
     @Size(max = 255, message = "Department must not exceed 255 characters")
     private String department;
-
+    
+    @NotBlank(message = "Designation is required")
     @Size(max = 255, message = "Designation must not exceed 255 characters")
     private String designation;
 
