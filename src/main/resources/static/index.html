@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Employee Directory</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top-bar">
+    <span class="brand">Employee Directory</span>
+</header>
+
+<main class="container">
+    <section id="list-view">
+        <div class="page-header">
+            <h1>Employees</h1>
+            <button type="button" id="add-button" class="btn btn-primary">Add Employee</button>
+        </div>
+
+        <div id="list-message" class="alert" hidden></div>
+
+        <div id="table-wrap" class="table-wrap" hidden>
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Department</th>
+                    <th>Designation</th>
+                    <th>Joining Date</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="employee-table-body"></tbody>
+            </table>
+        </div>
+
+        <p id="empty-message" class="empty" hidden>No employees yet. Click "Add Employee" to create one.</p>
+    </section>
+
+    <section id="form-view" hidden>
+        <div class="page-header">
+            <h1 id="form-title">Add Employee</h1>
+        </div>
+
+        <div id="form-message" class="alert" hidden></div>
+
+        <form id="employee-form" class="card" novalidate>
+            <div class="form-row">
+                <label for="fullName">Full Name</label>
+                <input type="text" id="fullName" placeholder="Full name">
+                <p class="field-error" id="error-fullName"></p>
+            </div>
+
+            <div class="form-row">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="name@example.com">
+                <p class="field-error" id="error-email"></p>
+            </div>
+
+            <div class="form-row">
+                <label for="phone">Phone</label>
+                <input type="text" id="phone" placeholder="01XXXXXXXXX">
+                <p class="field-error" id="error-phone"></p>
+            </div>
+
+            <div class="form-row">
+                <label for="department">Department</label>
+                <input type="text" id="department" placeholder="Department">
+                <p class="field-error" id="error-department"></p>
+            </div>
+
+            <div class="form-row">
+                <label for="designation">Designation (optional)</label>
+                <input type="text" id="designation" placeholder="Designation">
+                <p class="field-error" id="error-designation"></p>
+            </div>
+
+            <div class="form-row">
+                <label for="joiningDate">Joining Date</label>
+                <input type="date" id="joiningDate">
+                <p class="field-error" id="error-joiningDate"></p>
+            </div>
+
+            <div class="form-buttons">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" id="cancel-button" class="btn">Cancel</button>
+            </div>
+        </form>
+    </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
