@@ -20,7 +20,7 @@ public class Employee {
     private String phone;
     @Column (name="department",nullable=false,length=255)
     private String department;
-    @Column (name="designation",nullable = false,length = 255)
+    @Column (name="designation",length = 255)
     private String designation;
     @Column (name="joining_date",nullable=false)
     private LocalDate joiningDate;
