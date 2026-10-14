@@ -11,8 +11,14 @@ const tableBody = document.getElementById('employee-table-body');
 const emptyMessage = document.getElementById('empty-message');
 const formTitle = document.getElementById('form-title');
 const employeeForm = document.getElementById('employee-form');
+const confirmModal = document.getElementById('confirm-modal');
+const confirmTitle = document.getElementById('confirm-title');
+const confirmMessage = document.getElementById('confirm-message');
+const confirmOkButton = document.getElementById('confirm-ok-button');
+const confirmCancelButton = document.getElementById('confirm-cancel-button');
 
 let editingId = null;
+let pendingAction = null;
 
 function showMessage(element, text) {
     element.textContent = text;
@@ -24,6 +30,29 @@ async function readError(response) {
         return await response.json();
     } catch {
         return { message: 'Something went wrong. Please try again.' };
+    }
+}
+
+function openConfirmModal(title, message, okLabel, okClass, action) {
+    confirmTitle.textContent = title;
+    confirmMessage.textContent = message;
+    confirmOkButton.textContent = okLabel;
+    confirmOkButton.className = 'btn ' + okClass;
+    pendingAction = action;
+    confirmModal.hidden = false;
+    confirmOkButton.focus();
+}
+
+function closeConfirmModal() {
+    confirmModal.hidden = true;
+    pendingAction = null;
+}
+
+function runPendingAction() {
+    const action = pendingAction;
+    closeConfirmModal();
+    if (action) {
+        action();
     }
 }
 
@@ -60,7 +89,7 @@ function renderEmployees(employees) {
         const actions = document.createElement('div');
         actions.className = 'actions';
         actions.appendChild(createButton('Edit', 'btn', () => editEmployee(employee.id)));
-        actions.appendChild(createButton('Delete', 'btn btn-danger', () => deleteEmployee(employee)));
+        actions.appendChild(createButton('Delete', 'btn btn-danger', () => confirmDelete(employee)));
 
         const actionsCell = document.createElement('td');
         actionsCell.appendChild(actions);
@@ -132,10 +161,17 @@ async function editEmployee(id) {
     }
 }
 
+function confirmDelete(employee) {
+    openConfirmModal(
+        'Delete employee',
+        'Are you sure you want to delete ' + employee.fullName + '? This cannot be undone.',
+        'Delete',
+        'btn-danger',
+        () => deleteEmployee(employee)
+    );
+}
+
 async function deleteEmployee(employee) {
-    if (!confirm('Delete ' + employee.fullName + '?')) {
-        return;
-    }
     try {
         const response = await fetch(API_URL + '/' + employee.id, { method: 'DELETE' });
         if (!response.ok) {
@@ -149,8 +185,16 @@ async function deleteEmployee(employee) {
     }
 }
 
-async function saveEmployee(event) {
+function confirmSave(event) {
     event.preventDefault();
+    if (editingId === null) {
+        openConfirmModal('Create employee', 'Are you sure you want to create this employee?', 'Create', 'btn-primary', saveEmployee);
+    } else {
+        openConfirmModal('Update employee', 'Are you sure you want to save the changes to this employee?', 'Update', 'btn-primary', saveEmployee);
+    }
+}
+
+async function saveEmployee() {
     clearErrors();
 
     const data = {};
@@ -190,6 +234,20 @@ async function saveEmployee(event) {
 
 document.getElementById('add-button').addEventListener('click', () => showForm(null));
 document.getElementById('cancel-button').addEventListener('click', showList);
-employeeForm.addEventListener('submit', saveEmployee);
+employeeForm.addEventListener('submit', confirmSave);
+confirmOkButton.addEventListener('click', runPendingAction);
+confirmCancelButton.addEventListener('click', closeConfirmModal);
+
+confirmModal.addEventListener('click', (event) => {
+    if (event.target === confirmModal) {
+        closeConfirmModal();
+    }
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !confirmModal.hidden) {
+        closeConfirmModal();
+    }
+});
 
 loadEmployees();
