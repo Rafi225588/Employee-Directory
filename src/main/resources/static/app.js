@@ -5,6 +5,7 @@ const fieldNames = ['fullName', 'email', 'phone', 'department', 'designation', '
 const listView = document.getElementById('list-view');
 const formView = document.getElementById('form-view');
 const listMessage = document.getElementById('list-message');
+const successMessage = document.getElementById('success-message');
 const formMessage = document.getElementById('form-message');
 const tableWrap = document.getElementById('table-wrap');
 const tableBody = document.getElementById('employee-table-body');
@@ -19,10 +20,17 @@ const confirmCancelButton = document.getElementById('confirm-cancel-button');
 
 let editingId = null;
 let pendingAction = null;
+let successTimer = null;
 
 function showMessage(element, text) {
     element.textContent = text;
     element.hidden = text === '';
+}
+
+function showSuccess(text) {
+    showMessage(successMessage, text);
+    clearTimeout(successTimer);
+    successTimer = setTimeout(() => showMessage(successMessage, ''), 3000);
 }
 
 async function readError(response) {
@@ -180,6 +188,7 @@ async function deleteEmployee(employee) {
             return;
         }
         loadEmployees();
+        showSuccess('Employee deleted successfully.');
     } catch {
         showMessage(listMessage, SERVER_DOWN_MESSAGE);
     }
@@ -216,6 +225,7 @@ async function saveEmployee() {
 
         if (response.ok) {
             showList();
+            showSuccess(isEdit ? 'Employee updated successfully.' : 'Employee created successfully.');
             return;
         }
 
