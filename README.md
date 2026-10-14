@@ -99,3 +99,16 @@ I tested the API with Postman. For POST and PUT, choose Body, then raw, then JSO
 - joiningDate is required, format yyyy-MM-dd, and it cannot be a future date.
 
 If the input is wrong, the API returns 400 with a message for each wrong field. If the id does not exist, it returns 404. If the email is already used (create or update), it returns 409. All errors are returned as JSON.
+
+## Frontend
+
+I made a simple frontend using plain HTML, CSS and JavaScript (no Angular or React). It shows the employee list and has add, edit and delete.
+
+The files are in `src/main/resources/static` (`index.html`, `style.css`, `app.js`). Spring Boot serves them by itself, so there is nothing extra to install.
+
+How to run it:
+
+1. Start the project with `./mvnw spring-boot:run` (see "How to run" above).
+2. Open http://localhost:8080 in your browser.
+
+If a field is wrong, the error message from the API is shown under that field. If the email already exists, it is shown under the email field.
