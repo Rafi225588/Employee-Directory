@@ -1,7 +1,8 @@
 const API_URL = '/api/employees';
 const SERVER_DOWN_MESSAGE = 'Could not reach the server. Make sure the backend is running on port 8080.';
 const fieldNames = ['fullName', 'email', 'phone', 'department', 'designation', 'joiningDate'];
-
+const allowedFileTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const maxFileSize = 5 * 1024 * 1024;
 const listView = document.getElementById('list-view');
 const formView = document.getElementById('form-view');
 const listMessage = document.getElementById('list-message');
@@ -12,6 +13,9 @@ const tableBody = document.getElementById('employee-table-body');
 const emptyMessage = document.getElementById('empty-message');
 const formTitle = document.getElementById('form-title');
 const employeeForm = document.getElementById('employee-form');
+const fileInput = document.getElementById('file');
+const currentFile = document.getElementById('current-file');
+const fileError = document.getElementById('error-file');
 const confirmModal = document.getElementById('confirm-modal');
 const confirmTitle = document.getElementById('confirm-title');
 const confirmMessage = document.getElementById('confirm-message');
@@ -63,7 +67,29 @@ function runPendingAction() {
         action();
     }
 }
+function fileUrl(id) {
+    return API_URL + '/' + id + '/file';
+}
 
+function createFileLinks(employee) {
+    const wrapper = document.createElement('span');
+    wrapper.className = 'file-links';
+
+    const viewLink = document.createElement('a');
+    viewLink.href = fileUrl(employee.id);
+    viewLink.target = '_blank';
+    viewLink.rel = 'noopener';
+    viewLink.textContent = 'View';
+
+    const downloadLink = document.createElement('a');
+    downloadLink.href = fileUrl(employee.id);
+    downloadLink.download = employee.fileName;
+    downloadLink.textContent = 'Download';
+
+    wrapper.appendChild(viewLink);
+    wrapper.appendChild(downloadLink);
+    return wrapper;
+}
 function createCell(text) {
     const cell = document.createElement('td');
     cell.textContent = text;
@@ -93,6 +119,13 @@ function renderEmployees(employees) {
         row.appendChild(createCell(employee.department));
         row.appendChild(createCell(employee.designation || '-'));
         row.appendChild(createCell(employee.joiningDate));
+        const fileCell = document.createElement('td');
+        if (employee.hasFile) {
+            fileCell.appendChild(createFileLinks(employee));
+        } else {
+            fileCell.textContent = '-';
+        }
+        row.appendChild(fileCell);
 
         const actions = document.createElement('div');
         actions.className = 'actions';
@@ -143,12 +176,21 @@ function showList() {
     listView.hidden = false;
     loadEmployees();
 }
-
+function showCurrentFile(employee) {
+    const hasFile = employee !== null && employee.hasFile;
+    currentFile.textContent = '';
+    currentFile.hidden = !hasFile;
+    if (hasFile) {
+        currentFile.append('Current file: ' + employee.fileName + ' ', createFileLinks(employee));
+    }
+}
 function showForm(employee) {
     clearErrors();
     fieldNames.forEach((name) => {
         document.getElementById(name).value = employee ? employee[name] || '' : '';
     });
+    fileInput.value = '';
+    showCurrentFile(employee);
     editingId = employee ? employee.id : null;
     formTitle.textContent = employee ? 'Edit Employee' : 'Add Employee';
     listView.hidden = true;
@@ -193,16 +235,47 @@ async function deleteEmployee(employee) {
         showMessage(listMessage, SERVER_DOWN_MESSAGE);
     }
 }
-
+function getFileError(file) {
+    if (!allowedFileTypes.includes(file.type)) {
+        return 'Only PDF and image files are allowed';
+    }
+    if (file.size > maxFileSize) {
+        return 'File size must not exceed 5MB';
+    }
+    return '';
+}
 function confirmSave(event) {
     event.preventDefault();
+    fileError.textContent = '';
+    const file = fileInput.files[0];
+    if (file) {
+        const message = getFileError(file);
+        if (message !== '') {
+            fileError.textContent = message;
+            return;
+        }
+    }
     if (editingId === null) {
         openConfirmModal('Create employee', 'Are you sure you want to create this employee?', 'Create', 'btn-primary', saveEmployee);
     } else {
         openConfirmModal('Update employee', 'Are you sure you want to save the changes to this employee?', 'Update', 'btn-primary', saveEmployee);
     }
 }
-
+async function uploadFile(id, file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+        const response = await fetch(fileUrl(id), { method: 'POST', body: formData });
+        if (response.ok) {
+            return true;
+        }
+        const error = await readError(response);
+        fileError.textContent = error.message;
+    } catch {
+        fileError.textContent = SERVER_DOWN_MESSAGE;
+    }
+    return false;
+}
 async function saveEmployee() {
     clearErrors();
 
@@ -224,8 +297,21 @@ async function saveEmployee() {
         });
 
         if (response.ok) {
+            const savedEmployee = await response.json();
+            let successText = isEdit ? 'Employee updated successfully.' : 'Employee created successfully.';
+            const file = fileInput.files[0];
+            if (file) {
+                const uploaded = await uploadFile(savedEmployee.id, file);
+                if (!uploaded) {
+                    editingId = savedEmployee.id;
+                    formTitle.textContent = 'Edit Employee';
+                    showMessage(formMessage, 'The employee was saved, but the file was not uploaded.');
+                    return;
+                }
+                successText += ' File uploaded successfully.';
+            }
             showList();
-            showSuccess(isEdit ? 'Employee updated successfully.' : 'Employee created successfully.');
+            showSuccess(successText);
             return;
         }
 
@@ -236,6 +322,7 @@ async function saveEmployee() {
             showFieldErrors({ email: error.message });
         } else {
             showMessage(formMessage, error.message);
+            fileError.textContent = '';
         }
     } catch {
         showMessage(formMessage, SERVER_DOWN_MESSAGE);

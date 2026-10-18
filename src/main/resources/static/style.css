@@ -145,7 +145,21 @@ th {
     border-radius: 4px;
     font-size: 14px;
 }
+.current-file {
+    margin: 0 0 6px;
+    color: #52606d;
+    font-size: 14px;
+}
 
+.file-links {
+    display: inline-flex;
+    gap: 10px;
+}
+
+.file-links a {
+    color: #2563eb;
+    font-size: 14px;
+}
 .field-error {
     margin: 4px 0 0;
     color: #b91c1c;
