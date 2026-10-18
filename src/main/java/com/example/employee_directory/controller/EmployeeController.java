@@ -2,14 +2,11 @@ package com.example.employee_directory.controller;
 
 import com.example.employee_directory.dto.EmployeeRequest;
 import com.example.employee_directory.dto.EmployeeResponse;
-import com.example.employee_directory.entity.Employee;
 import com.example.employee_directory.iservice.IEmployeeService;
 import jakarta.validation.Valid;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RestController
@@ -58,18 +55,7 @@ public class EmployeeController {
         EmployeeResponse response = employeeService.uploadFile(id, file);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-    @GetMapping("/{id}/file")
-    public ResponseEntity<byte[]> getFile(@PathVariable("id") Long id) {
-        Employee employee = employeeService.getFile(id);
-        ContentDisposition disposition = ContentDisposition.inline()
-                .filename(employee.getFileName(), StandardCharsets.UTF_8)
-                .build();
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(employee.getFileType()))
-                .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
-                .header("X-Content-Type-Options", "nosniff")
-                .body(employee.getFileData());
-    }
+
     @DeleteMapping("/{id}/file")
     public ResponseEntity<Void> deleteFile(@PathVariable("id") Long id) {
         employeeService.deleteFile(id);
