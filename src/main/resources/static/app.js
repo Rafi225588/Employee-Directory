@@ -3,6 +3,7 @@ const SERVER_DOWN_MESSAGE = 'Could not reach the server. Make sure the backend i
 const fieldNames = ['fullName', 'email', 'phone', 'department', 'designation', 'joiningDate'];
 const allowedFileTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 const maxFileSize = 5 * 1024 * 1024;
+
 const listView = document.getElementById('list-view');
 const formView = document.getElementById('form-view');
 const listMessage = document.getElementById('list-message');
@@ -67,7 +68,8 @@ function runPendingAction() {
         action();
     }
 }
-function fileUrl(id) {
+
+function uploadUrl(id) {
     return API_URL + '/' + id + '/file';
 }
 
@@ -76,20 +78,21 @@ function createFileLinks(employee) {
     wrapper.className = 'file-links';
 
     const viewLink = document.createElement('a');
-    viewLink.href = fileUrl(employee.id);
+    viewLink.href = employee.fileUrl;
     viewLink.target = '_blank';
     viewLink.rel = 'noopener';
     viewLink.textContent = 'View';
 
     const downloadLink = document.createElement('a');
-    downloadLink.href = fileUrl(employee.id);
-    downloadLink.download = employee.fileName;
+    downloadLink.href = employee.fileUrl;
+    downloadLink.download = '';
     downloadLink.textContent = 'Download';
 
     wrapper.appendChild(viewLink);
     wrapper.appendChild(downloadLink);
     return wrapper;
 }
+
 function createCell(text) {
     const cell = document.createElement('td');
     cell.textContent = text;
@@ -119,8 +122,9 @@ function renderEmployees(employees) {
         row.appendChild(createCell(employee.department));
         row.appendChild(createCell(employee.designation || '-'));
         row.appendChild(createCell(employee.joiningDate));
+
         const fileCell = document.createElement('td');
-        if (employee.hasFile) {
+        if (employee.fileUrl) {
             fileCell.appendChild(createFileLinks(employee));
         } else {
             fileCell.textContent = '-';
@@ -157,6 +161,7 @@ async function loadEmployees() {
 
 function clearErrors() {
     showMessage(formMessage, '');
+    fileError.textContent = '';
     fieldNames.forEach((name) => {
         document.getElementById('error-' + name).textContent = '';
     });
@@ -176,14 +181,16 @@ function showList() {
     listView.hidden = false;
     loadEmployees();
 }
+
 function showCurrentFile(employee) {
-    const hasFile = employee !== null && employee.hasFile;
+    const hasFile = employee !== null && employee.fileUrl;
     currentFile.textContent = '';
     currentFile.hidden = !hasFile;
     if (hasFile) {
-        currentFile.append('Current file: ' + employee.fileName + ' ', createFileLinks(employee));
+        currentFile.append('Current file: ', createFileLinks(employee));
     }
 }
+
 function showForm(employee) {
     clearErrors();
     fieldNames.forEach((name) => {
@@ -235,6 +242,7 @@ async function deleteEmployee(employee) {
         showMessage(listMessage, SERVER_DOWN_MESSAGE);
     }
 }
+
 function getFileError(file) {
     if (!allowedFileTypes.includes(file.type)) {
         return 'Only PDF and image files are allowed';
@@ -244,6 +252,7 @@ function getFileError(file) {
     }
     return '';
 }
+
 function confirmSave(event) {
     event.preventDefault();
     fileError.textContent = '';
@@ -261,11 +270,12 @@ function confirmSave(event) {
         openConfirmModal('Update employee', 'Are you sure you want to save the changes to this employee?', 'Update', 'btn-primary', saveEmployee);
     }
 }
+
 async function uploadFile(id, file) {
     const formData = new FormData();
     formData.append('file', file);
     try {
-        const response = await fetch(fileUrl(id), { method: 'POST', body: formData });
+        const response = await fetch(uploadUrl(id), { method: 'POST', body: formData });
         if (response.ok) {
             return true;
         }
@@ -276,6 +286,7 @@ async function uploadFile(id, file) {
     }
     return false;
 }
+
 async function saveEmployee() {
     clearErrors();
 
@@ -322,7 +333,6 @@ async function saveEmployee() {
             showFieldErrors({ email: error.message });
         } else {
             showMessage(formMessage, error.message);
-            fileError.textContent = '';
         }
     } catch {
         showMessage(formMessage, SERVER_DOWN_MESSAGE);
