@@ -14,6 +14,9 @@ public class EmployeeResponse {
     private LocalDate joiningDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String fileName;
+    private String fileType;
+    private boolean hasFile;
 
     public Long getId() {
         return id;
@@ -85,5 +88,29 @@ public class EmployeeResponse {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public String getFileType() {
+        return fileType;
+    }
+
+    public void setFileType(String fileType) {
+        this.fileType = fileType;
+    }
+
+    public boolean isHasFile() {
+        return hasFile;
+    }
+
+    public void setHasFile(boolean hasFile) {
+        this.hasFile = hasFile;
     }
 }
