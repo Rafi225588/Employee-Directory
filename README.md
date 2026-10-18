@@ -100,18 +100,29 @@ I tested the API with Postman. For POST and PUT, choose Body, then raw, then JSO
 
 If the input is wrong, the API returns 400 with a message for each wrong field. If the id does not exist, it returns 404. If the email is already used (create or update), it returns 409. All errors are returned as JSON.
 
-
 ## File Upload
 
-An employee can have one file, either a PDF or an image. The file is saved in the database, in the same employee row (columns `file_name`, `file_type` and `file_data`). These columns are created automatically when the app starts, so nothing extra is needed.
+An employee can have one file, either a PDF or an image. The file is saved in a folder on the computer where the app runs. Only the url of the file is saved in the database, in the `file_url` column. This column is created automatically when the app starts, so nothing extra is needed.
 
-Allowed files are PDF, JPEG, PNG, GIF and WebP, up to 5MB. If you upload a new file for the same employee, the old one is replaced. The file itself is never sent inside the JSON. The employee response only shows `fileName`, `fileType` and `hasFile`.
+The folder is set in `src/main/resources/application.properties`:
+
+```properties
+app.upload-dir=D:/employee-uploads
+```
+
+Change this to a folder on your own computer. Use forward slashes, even on Windows. The app creates the folder when the first file is uploaded, so you do not need to make it yourself. If you do not want to edit the file, you can set an environment variable named `APP_UPLOAD_DIR` instead.
+
+Every file is saved with a random name, for example `3f2a9c1e-5b7d-4e21-9a4c-0d6e8f1b2c3d.pdf`. This way two files never clash, and the name typed by the user is never used on disk.
+
+Allowed files are PDF, JPEG, PNG, GIF and WebP, up to 5MB. If you upload a new file for the same employee, the old file is deleted from the folder and replaced. If an employee is deleted, their file is deleted too.
+
+The employee response has a `fileUrl` field. It is `null` when the employee has no file. To open a file, put `http://localhost:8080` in front of its `fileUrl`.
 
 | Method | URL | What it does | Success |
 |---|---|---|---|
 | POST | /api/employees/{id}/file | Upload or replace the file | 200 |
-| GET | /api/employees/{id}/file | Open or download the file | 200 |
 | DELETE | /api/employees/{id}/file | Remove the file, employee stays | 204 |
+| GET | /uploads/{file name} | Open or download the file | 200 |
 
 ### Sample requests (Postman)
 
@@ -134,17 +145,15 @@ Response (200):
   "joiningDate": "2026-10-01",
   "createdAt": "2026-10-18T14:30:12.123456",
   "updatedAt": "2026-10-18T14:35:40.654321",
-  "fileName": "certificate.pdf",
-  "fileType": "application/pdf",
-  "hasFile": true
+  "fileUrl": "/uploads/3f2a9c1e-5b7d-4e21-9a4c-0d6e8f1b2c3d.pdf"
 }
 ```
 
-Get the file:
+Open the file:
 
 - Method: GET
-- URL: `http://localhost:8080/api/employees/1/file`
-- No body. Postman shows the image, or the PDF, in the response.
+- URL: `http://localhost:8080/uploads/3f2a9c1e-5b7d-4e21-9a4c-0d6e8f1b2c3d.pdf` (use the `fileUrl` from your own response)
+- No body. Postman shows the image, or the PDF, in the response. You can also paste this url in the browser.
 
 Remove the file:
 
@@ -159,9 +168,8 @@ Remove the file:
 | No file sent, or the file is empty | 400 | Please select a file to upload |
 | File is not a PDF or an image | 400 | Only PDF and image files are allowed |
 | File is bigger than 5MB | 400 | File size must not exceed 5MB |
-| File name is longer than 255 characters | 400 | File name must not exceed 255 characters |
 | Employee id does not exist | 404 | Employee not found with id: {id} |
-| Employee has no file (GET or DELETE) | 404 | No file found for employee id: {id} |
+| Employee has no file (DELETE) | 404 | No file found for employee id: {id} |
 
 ## Frontend
 
