@@ -28,6 +28,14 @@ public class Employee {
     private LocalDateTime createdAt;
     @Column (name="updated_at")
     private LocalDateTime updatedAt;
+    @Column(name = "file_name")
+    private String fileName;
+
+    @Column(name = "file_type")
+    private String fileType;
+
+    @Column(name = "file_data", columnDefinition = "LONGBLOB")
+    private byte[] fileData;
     @PrePersist
     void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -108,5 +116,28 @@ public class Employee {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public String getFileType() {
+        return fileType;
+    }
+
+    public void setFileType(String fileType) {
+        this.fileType = fileType;
+    }
+
+    public byte[] getFileData() {
+        return fileData;
+    }
+
+    public void setFileData(byte[] fileData) {
+        this.fileData = fileData;
     }
 }
