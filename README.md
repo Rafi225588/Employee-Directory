@@ -100,6 +100,69 @@ I tested the API with Postman. For POST and PUT, choose Body, then raw, then JSO
 
 If the input is wrong, the API returns 400 with a message for each wrong field. If the id does not exist, it returns 404. If the email is already used (create or update), it returns 409. All errors are returned as JSON.
 
+
+## File Upload
+
+An employee can have one file, either a PDF or an image. The file is saved in the database, in the same employee row (columns `file_name`, `file_type` and `file_data`). These columns are created automatically when the app starts, so nothing extra is needed.
+
+Allowed files are PDF, JPEG, PNG, GIF and WebP, up to 5MB. If you upload a new file for the same employee, the old one is replaced. The file itself is never sent inside the JSON. The employee response only shows `fileName`, `fileType` and `hasFile`.
+
+| Method | URL | What it does | Success |
+|---|---|---|---|
+| POST | /api/employees/{id}/file | Upload or replace the file | 200 |
+| GET | /api/employees/{id}/file | Open or download the file | 200 |
+| DELETE | /api/employees/{id}/file | Remove the file, employee stays | 204 |
+
+### Sample requests (Postman)
+
+Upload a file:
+
+- Method: POST
+- URL: `http://localhost:8080/api/employees/1/file`
+- Body: choose `form-data`, add a key named `file`, change its type from Text to File, then select a PDF or image.
+
+Response (200):
+
+```json
+{
+  "id": 1,
+  "fullName": "Karim Hasan",
+  "email": "karim@example.com",
+  "phone": "01712345678",
+  "department": "Engineering",
+  "designation": "Intern",
+  "joiningDate": "2026-10-01",
+  "createdAt": "2026-10-18T14:30:12.123456",
+  "updatedAt": "2026-10-18T14:35:40.654321",
+  "fileName": "certificate.pdf",
+  "fileType": "application/pdf",
+  "hasFile": true
+}
+```
+
+Get the file:
+
+- Method: GET
+- URL: `http://localhost:8080/api/employees/1/file`
+- No body. Postman shows the image, or the PDF, in the response.
+
+Remove the file:
+
+- Method: DELETE
+- URL: `http://localhost:8080/api/employees/1/file`
+- No body. Response is 204 with nothing in it.
+
+### Errors
+
+| When | Status | Message |
+|---|---|---|
+| No file sent, or the file is empty | 400 | Please select a file to upload |
+| File is not a PDF or an image | 400 | Only PDF and image files are allowed |
+| File is bigger than 5MB | 400 | File size must not exceed 5MB |
+| File name is longer than 255 characters | 400 | File name must not exceed 255 characters |
+| Employee id does not exist | 404 | Employee not found with id: {id} |
+| Employee has no file (GET or DELETE) | 404 | No file found for employee id: {id} |
+
 ## Frontend
 
 I made a simple frontend using plain HTML, CSS and JavaScript (no Angular or React). It shows the employee list and has add, edit and delete.
@@ -110,5 +173,7 @@ How to run it:
 
 1. Start the project with `./mvnw spring-boot:run` (see "How to run" above).
 2. Open http://localhost:8080 in your browser.
+3. The Add and Edit form has a file field for a PDF or image up to 5MB. The browser checks the type and size first and the server checks again.
+4. The employee list has View and Download links for the file. The Edit form shows the current file with the same links.
 
 If a field is wrong, the error message from the API is shown under that field. If the email already exists, it is shown under the email field.
