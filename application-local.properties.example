@@ -1,0 +1,6 @@
+# Copy this file to application-local.properties (same folder as pom.xml) and fill in your own values.
+# application-local.properties is git-ignored, so your password is never committed.
+spring.datasource.username=root
+spring.datasource.password=your_mysql_password
+# Optional. Default is <your home folder>/employee-uploads
+#app.upload-dir=D:/employee-uploads

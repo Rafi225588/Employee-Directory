@@ -34,3 +34,5 @@ build/
 
 hs_err_pid*.log
 replay_pid*.log
+### Local settings (secrets) ###
+application-local.properties
