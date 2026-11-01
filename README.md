@@ -5,11 +5,12 @@ A small REST API to manage employees. It is made with Java 21, Spring Boot 4.1.1
 ## Database setup
 
 1. Install MySQL and start it (default port 3306).
-2. Open `src/main/resources/application.properties` and write your own MySQL username and password:
+2. Keep your MySQL password in a local file (it is not committed to git). In the project folder, copy `application-local.properties.example` to `application-local.properties` and write your own username and password:
 
        spring.datasource.username=root
        spring.datasource.password=your_mysql_password
 
+   If your MySQL root user has no password, you can skip this step. You can also use the environment variable `SPRING_DATASOURCE_PASSWORD` instead.
 3. You do not need to create the database or the table by yourself. When the app starts for the first time, it creates the database `employee_crud` and the `employees` table.
 
 ## How to run
@@ -104,13 +105,13 @@ If the input is wrong, the API returns 400 with a message for each wrong field. 
 
 An employee can have one file, either a PDF or an image. The file is saved in a folder on the computer where the app runs. Only the url of the file is saved in the database, in the `file_url` column. This column is created automatically when the app starts, so nothing extra is needed.
 
-The folder is set in `src/main/resources/application.properties`:
+By default the folder is `employee-uploads` inside your user home folder, so it works on any computer. To use another folder, set `app.upload-dir` in `application-local.properties`:
 
 ```properties
 app.upload-dir=D:/employee-uploads
 ```
 
-Change this to a folder on your own computer. Use forward slashes, even on Windows. The app creates the folder when the first file is uploaded, so you do not need to make it yourself. If you do not want to edit the file, you can set an environment variable named `APP_UPLOAD_DIR` instead.
+Use forward slashes, even on Windows. The app creates the folder when the first file is uploaded, so you do not need to make it yourself. If you do not want to edit the file, you can set an environment variable named `APP_UPLOAD_DIR` instead.
 
 Every file is saved with a random name, for example `3f2a9c1e-5b7d-4e21-9a4c-0d6e8f1b2c3d.pdf`. This way two files never clash, and the name typed by the user is never used on disk.
 
